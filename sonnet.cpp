@@ -4,6 +4,7 @@
 #include <cassert>
 #include <map>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -90,3 +91,107 @@ char rhyming_letter(const char *ending) {
 }
 
 /* START WRITING YOUR FUNCTION BODIES HERE */
+int count_words(const char* line) {
+  int count = 0;
+  char last_word[MAX_LENGTH];
+
+  while (get_word(line, count+1, last_word))
+    ++count;
+  
+  return count;
+}
+
+bool find_phonetic_ending(const char* word, char* phonetic_ending) {
+  ifstream in;
+  in.open("dictionary.txt");
+  char dict_word[MAX_LENGTH];
+  char phonetic[MAX_LENGTH];
+  bool found = false;
+
+  while(!found && in >> ws >> dict_word) {
+    if (strcmp(dict_word, word) == 0)
+      found = true;
+    
+    in.getline(phonetic, MAX_LENGTH);
+  }
+  in.close();
+
+  if (found) {
+    int word_count = count_words(phonetic);
+    int vowel_pos = 1;
+    char next_phoneme[MAX_LENGTH];
+    for (int i = 1; i <= word_count; ++i) {
+      get_word(phonetic, i, next_phoneme);
+      if (word_contains_vowel(next_phoneme))
+        vowel_pos = i;
+    }
+
+    strcpy(phonetic_ending, "");
+    for (int i = vowel_pos; i <= count_words(phonetic); ++i) {
+      get_word(phonetic, i, next_phoneme);
+      strcat(phonetic_ending, next_phoneme);
+    }
+    
+    return true;
+  }
+
+  return false;
+}
+
+bool word_contains_vowel(const char* word) {
+  int len = strlen(word);
+  for (int i = 0; i < len; ++i) {
+    if (word[i] == 'A' || word[i] == 'E' || word[i] == 'I' || word[i] == 'O' || word[i] == 'U')
+      return true;
+  }
+
+  return false;
+}
+
+bool find_rhyme_scheme(const char* filename, char* scheme) {
+  ifstream in;
+  in.open(filename);
+
+  if (in.fail())
+    return false;
+
+  char line[MAX_LENGTH];
+  char last_word[MAX_LENGTH];
+  char ending[MAX_LENGTH];
+  int word_count;
+  int count = 0;
+  rhyming_letter(RESET);
+  strcpy(scheme, "");
+
+  in.getline(line, MAX_LENGTH);
+  while (in.good()) {
+    word_count = count_words(line);
+    get_word(line, word_count, last_word);
+    find_phonetic_ending(last_word, ending);
+
+    scheme[count] = rhyming_letter(ending);
+    ++count;
+
+    in.getline(line, MAX_LENGTH);
+  }
+  in.close();
+  
+  return true;
+}
+
+const char* identify_sonnet(const char* filename) {
+  char scheme[MAX_LENGTH];
+
+  if (find_rhyme_scheme(filename, scheme)) {
+    if (strcmp(scheme, "ababcdcdefefgg") == 0)
+      return "Shakespearean";
+
+    if (strcmp(scheme, "abbaabbacdcdcd") == 0)
+      return "Petrarchan";
+
+    if (strcmp(scheme, "ababbcbccdcdee") == 0)
+      return "Spenserian";
+  }
+
+  return "Unknown";
+}

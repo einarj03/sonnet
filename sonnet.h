@@ -1,6 +1,8 @@
 // RESET is a constant used by function rhyming_letter(...)
 #define RESET NULL
 
+const int MAX_LENGTH = 512;
+
 /* get_word(...) retrieves a word from the input string input_line
    based on its word number. If the word number is valid, the function
    places an uppercase version of the word in the output parameter
@@ -18,3 +20,13 @@ bool get_word(const char *input_line, int number, char *output_word);
    poem) by calling rhyming_letter(RESET). */
 
 char rhyming_letter(const char *ending);
+
+int count_words(const char* line);
+
+bool find_phonetic_ending(const char* word, char* phonetic_ending);
+
+bool word_contains_vowel(const char* word);
+
+bool find_rhyme_scheme(const char* filename, char* scheme);
+
+const char* identify_sonnet(const char* filename);
